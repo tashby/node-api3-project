@@ -1,44 +1,105 @@
 const express = require('express');
-
+const db = require('./userDb')
 const router = express.Router();
+const {validateUserId, validateUser} = require("../middleware/validateUser")
 
-router.post('/', (req, res) => {
+// router.post('/', (req, res) => {
+//   // do your magic!
+// });
+
+router.post('/users', (req, res) => {
   // do your magic!
+  if(!req.body.name) {
+    return res.status(400).json({
+        errorMessage: "Please provide name for the post."
+    })
+}
+
+db.insert(req.body)
+.then((user) => {
+    res.status(201).json(user)
+})
+.catch((error) => {
+    console.log(error)
+    res.status(500).json({
+        error: "There was an error while saving the post to the database"
+    })
+})
 });
 
-router.post('/:id/posts', (req, res) => {
+router.get('/users', (req, res) => {
   // do your magic!
+  db.get()
+  .then((users) =>{
+      res.json(users)
+  })
+  .catch(() => {
+      res.status(500).json({
+          error: "The users information could not be retrieved."
+      })
+  })
 });
 
-router.get('/', (req, res) => {
+router.get('/users/:id', validateUserId(), (req, res) => {
   // do your magic!
+  res.status(200).json(req.user)
 });
 
-router.get('/:id', (req, res) => {
+// router.get('/:id/posts', (req, res) => {
+//   // do your magic!
+// });
+
+router.delete('/users/:id', validateUserId(), (req, res) => {
   // do your magic!
+  db.remove(req.params.id)
+        .then((count) => {
+            if(count > 0) {
+                res.status(200).json({
+                    message: "Welcome"
+                })
+            } else {
+                res.status(404).json({
+                    message: "The post with the specified ID does not exist."
+                })
+            }
+        })
+        .catch((error) => {
+            console.log(error)
+            res.status(500).json({
+                error: "The post could not be removed"
+            })
+        })
 });
 
-router.get('/:id/posts', (req, res) => {
+router.put('/users/:id', validateUserId(), (req, res) => {
   // do your magic!
-});
+  if(!req.body.name) {
+    return res.status(400).json({
+        errorMessage: "Please provide text for the post."
+    })
+}
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
-});
-
-router.put('/:id', (req, res) => {
-  // do your magic!
+db.update(req.params.id, req.body)
+.then((user) => {
+         res.status(200).json(user)
+})
+.catch((error) => {
+    console.log(error)
+    res.status(500).json({
+        error: "The post information could not be modified."
+    })
+})
 });
 
 //custom middleware
 
-function validateUserId(req, res, next) {
-  // do your magic!
-}
+// function validateUserId(req, res, next) {
+//   // do your magic!
+// }
 
-function validateUser(req, res, next) {
-  // do your magic!
-}
+// function validateUser(req, res, next) {
+//   // do your magic!
+// }
 
 function validatePost(req, res, next) {
   // do your magic!
